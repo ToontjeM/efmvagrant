@@ -36,8 +36,8 @@ After provisioning, the hosts will have the current directory mounted in their f
 | -------- | -------- | ----- | -------- | -------- |
 | 0 | Local PC | Reboot all servers | Local user | `00-reboot.sh` | Optional but recommended |
 | 1 | Primary | Configure replication | enterprisedb | `01-configureReplicationPrimary.sh` |  |
-| 2 | | | | | |
-| 3 | | | | | |
+| 2 |  |  |  |  |  |
+| 3 |  |  |  |  |  |
 
 ### Passwords
 
