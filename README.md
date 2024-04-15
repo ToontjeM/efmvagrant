@@ -32,8 +32,9 @@ After provisioning, the hosts will have the current directory mounted in their f
 *It is recommended to reboot (`00-reboot.sh`) the three servers after provisioning since a lot of updates have been insalled.*
 
 ### Configuring software
+
 | Step | Server | Action | User | Script | Remarks |
-| -------- | -------- | ----- | -------- | -------- |
+| -------- | -------- | ----- | -------- | -------- | ------ |
 | 0 | Local PC | Reboot all servers | Local user | `00-reboot.sh` | Optional but recommended |
 | 1 | Primary | Configure replication | enterprisedb | `01-configureReplicationPrimary.sh` |  |
 | 2 |  |  |  |  |  |
