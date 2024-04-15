@@ -1,6 +1,5 @@
 shared:
-  box: generic/ubuntu2204
-  box_version: "4.2.10"
+  box: ubuntu/jammy64
   network: "192.168.56.1"
 
 pgnode:
