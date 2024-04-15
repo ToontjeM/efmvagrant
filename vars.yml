@@ -1,0 +1,14 @@
+shared:
+  box: generic/ubuntu2204
+  box_version: "4.2.10"
+  network: "192.168.56.1"
+
+pgnode:
+  vm_name: pg
+  mem_size: 2048
+  cpus: 2
+ 
+witness:
+  vm_name: witness
+  mem_size: 1024
+  cpus: 2
