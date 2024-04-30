@@ -16,6 +16,7 @@ To deploy this demo the following needs to be installed in the PC from which you
 - VirtualBox (https://www.virtualbox.org/)
 - Vagrant (https://www.vagrantup.com/)
 - Vagrant Hosts plug-in (`vagrant plugin install vagrant-hosts`)
+- Vagrant Reload plug-in (`vagrant plugin install vagrant-reload`)
 - A file called `.edbtoken` with your EDB repository 2.0 token. This token can be found in your EDB account profile here: https://www.enterprisedb.com/accounts/profile
 
 The environment is deloyed in a VirtualBox provate network. Adjust the IP addresses to your needs in `vars.yml`.
@@ -35,9 +36,8 @@ After provisioning, the hosts will have the current directory mounted in their f
 
 | Step | Server | Action | User | Script | Remarks |
 | -------- | -------- | ----- | -------- | -------- | ------ |
-| 0 | Local PC | Reboot all servers | Local user | `00-reboot.sh` | Optional but recommended |
 | 1 | Primary | Configure replication | enterprisedb | `01-configureReplicationPrimary.sh` |  |
-| 2 |  |  |  |  |  |
+| 2 | Standby | Configure replication | enterprisedb | `02-configureStandby.sh` |  |
 | 3 |  |  |  |  |  |
 
 ### Passwords

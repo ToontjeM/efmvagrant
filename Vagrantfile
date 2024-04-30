@@ -61,7 +61,10 @@ Vagrant.configure("2") do |config|
       v.memory  = MEMORY_WITNESS_NODE
       v.cpus    = CPUS_WITNESS_NODE
     end
-#    node.vm.provision "env", { "pgnodeIP" => vars['shared']['network'] + "0" , "NETWORKCIDR" => vars['shared']['networkcidr'] }
     node.vm.provision "shell", path: "bootstrap_witness.sh"
   end
+
+  # Reboot all nodes after provisioning
+  config.vm.provision :reload
+
 end
