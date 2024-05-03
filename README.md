@@ -2,12 +2,13 @@
 
 ## Intro
 This demo is deployed using Vagrant and will deploy the following nodes:
-![](images/arch.png)
+![](https://www.enterprisedb.com/docs/static/68da4913f0bb3b9a09585ec16cf63c5f/0c69d/failover_manager_overview.png)
 | Name | IP | Cluster | Task | Remarks |
 | -------- | -------- | ----- | -------- | -------- |
-| witness | 192.168.56.10 | TBD | EFM witness |  |
-| primary | 192.168.56.11 | TBD | Postgres Primary | |
-| replica| 192.168.56.12 | TBD | Replica of Primary |  |
+| witness | 192.168.0.210 | TBD | EFM witness |  |
+| primary | 192.168.0.211 | TBD | Postgres Primary | |
+| replica | 192.168.0.212 | TBD | Replica of Primary |  |
+| VIP | 192.168.0.220 | TBD | EFM VIP address | |
 
 ## Demo prep
 ### Pre-requisites

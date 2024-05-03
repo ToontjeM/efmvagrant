@@ -1,18 +1,26 @@
 #!/bin/bash
 
-echo "--- Running Bootstrap_general.sh ---"
-ufw disable
+. /vagrant/env.sh
 
-echo "--- Configuring repo ---"
+printf "${R}*** Running Bootstrap_general.sh ***${N}\n"
+systemctl stop firewalld.service
+systemctl disable firewalld.service
+sed -i 's/%wheel/#%wheel/g' /etc/sudoers
+sed -i 's/# #%wheel/%wheel/g' /etc/sudoers
+
+
+printf "${R}*** Configuring repo ***${N}\n"
 EDBTOKEN=$(cat /vagrant/.edbtoken)
-export DEBIAN_FRONTEND=noninteractive
-curl -1sLf "https://downloads.enterprisedb.com/$EDBTOKEN/enterprise/setup.deb.sh" | bash
+curl -1sLf "https://downloads.enterprisedb.com/$EDBTOKEN/enterprise/setup.rpm.sh" | sudo -E bash
 
-echo "--- Running updates ---"
-apt-get update && apt-get dist-upgrade -y && apt-get autoremove -y
+printf "${R}*** Running updates ***${N}\n"
+dnf update && dnf -y upgrade
 
-echo "--- Installing dependencies ---"
-apt-get install openjdk-21-jdk -y
+printf "${R}*** Installing dependencies ***${N}\n"
+dnf -y install java-21-openjdk
 
-echo "--- Installing EFM 4.8 on all nodes"
-apt-get install edb-efm48 -y
+printf "${R}*** Installing EFM 4.8 on all nodes ***${N}\n"
+dnf -y install edb-efm48
+
+printf "${R}*** Installing PEM agent on all nodes ***${N}\n"
+dnf -y install edb-pem-agent
