@@ -74,6 +74,5 @@ sudo systemctl restart edb-as-15
 printf "${G}*** Create replication slot ***${N}\n"
 psql -c "SELECT * FROM pg_create_physical_replication_slot('replicationslot2');" edb
 psql -c 'select * from pg_replication_slots;' edb
-psql -c 'select * from pg_replication_slots;' edb
 
 ps -ef | grep sender

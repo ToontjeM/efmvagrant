@@ -50,19 +50,19 @@ Vagrant.configure("2") do |config|
     node.vm.provision "shell", path: "bootstrap_standby.sh"
   end
 
-#   # witness node
-#   config.vm.define "witness" do |node|
-#     node.vm.box               = VAGRANT_BOX
-#     node.vm.box_check_update  = false
-#     node.vm.hostname          = "witness"
-#     node.vm.network vars['shared']['networktype'] + "_network", ip: vars['shared']['network'] + "0", bridge: "enx24f5a28b44a6"
-#     node.vm.provider :virtualbox do |v|
-#       v.name    = "witness"
-#       v.memory  = MEMORY_WITNESS_NODE
-#       v.cpus    = CPUS_WITNESS_NODE
-#     end
-#     node.vm.provision "shell", path: "bootstrap_witness.sh"
-#   end 
+  # witness node
+  config.vm.define "witness" do |node|
+    node.vm.box               = VAGRANT_BOX
+    node.vm.box_check_update  = false
+    node.vm.hostname          = "witness"
+    node.vm.network vars['shared']['networktype'] + "_network", ip: vars['shared']['network'] + "0", bridge: "enx24f5a28b44a6"
+    node.vm.provider :virtualbox do |v|
+      v.name    = "witness"
+      v.memory  = MEMORY_WITNESS_NODE
+      v.cpus    = CPUS_WITNESS_NODE
+    end
+    node.vm.provision "shell", path: "bootstrap_witness.sh"
+  end 
 
 # Reboot all nodes after provisioning
   config.vm.provision :reload

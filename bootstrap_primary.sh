@@ -105,8 +105,7 @@ systemctl enable edb-efm-$EFMVERSION
 systemctl start edb-efm-$EFMVERSION
 
 printf "${R}*** Status Enterprise Failover Manager ***${N}\n"
-cd /usr/edb/efm-$EFMVERSION/bin
-./efm cluster-status efm
+/usr/edb/efm-$EFMVERSION/bin/efm cluster-status efm
 
 #logs
 cat /var/log/efm-$EFMVERSION/startup-efm.log

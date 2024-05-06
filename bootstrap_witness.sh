@@ -2,6 +2,8 @@
 
 echo "Configuring witness"
 
+. /vagrant/env.sh
+
 dnf -y install edb-as${EDBVERSION}-server-client
 
 # Install java
@@ -32,9 +34,9 @@ sed -i "s@virtual.ip.interface=@virtual.ip.interface=eth1@" /etc/edb/efm-${EFMVE
 sed -i "s@virtual.ip.prefix=@virtual.ip.prefix=24@" /etc/edb/efm-${EFMVERSION}/efm.properties
 
 sed -i "s@local.timeout=60@local.timeout=15@" /etc/edb/efm-${EFMVERSION}/efm.properties
-sed -i "s@db.bin=@db.bin=/usr/edb/as${PGVERSION}/bin@" /etc/edb/efm-${EFMVERSION}/efm.properties
-sed -i "s@db.data.dir=@db.data.dir=/var/lib/edb/as${PGVERSION}/data@" /etc/edb/efm-${EFMVERSION}/efm.properties
-sed -i "s@db.config.dir=@db.config.dir=/var/lib/edb/as${PGVERSION}/data@" /etc/edb/efm-${EFMVERSION}/efm.properties
+sed -i "s@db.bin=@db.bin=/usr/edb/as${EDBVERSION}/bin@" /etc/edb/efm-${EFMVERSION}/efm.properties
+sed -i "s@db.data.dir=@db.data.dir=/var/lib/edb/as${EDBVERSION}/data@" /etc/edb/efm-${EFMVERSION}/efm.properties
+sed -i "s@db.config.dir=@db.config.dir=/var/lib/edb/as${EDBVERSION}/data@" /etc/edb/efm-${EFMVERSION}/efm.properties
 sed -i "s@user.email=@user.email=dba\@domain.com@" /etc/edb/efm-${EFMVERSION}/efm.properties
 sed -i "s@bind.address=@bind.address=192.168.0.210:7800@" /etc/edb/efm-${EFMVERSION}/efm.properties
 sed -i "s@is.witness=@is.witness=true@" /etc/edb/efm-${EFMVERSION}/efm.properties
@@ -65,9 +67,6 @@ echo "**************************************************************************
 #Start EFM
 systemctl start edb-efm-${EFMVERSION}
 
-#Upgrade config
-#efm upgrade-conf efm -source .
-
 echo "******************************************************************************"
 echo "Status Enterprise Failover Manager." `date`
 echo "******************************************************************************"
@@ -77,5 +76,3 @@ cd /etc/edb/efm-${EFMVERSION}
 
 #logs
 cat /var/log/efm-${EFMVERSION}/startup-efm.log
-
-sudo su - enterprisedb /vagrant/configureWitness.sh
