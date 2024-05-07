@@ -8,3 +8,4 @@ export EDBTOKEN=$(cat /vagrant/.edbtoken)
 export EDBVERSION=15
 export EDBCONFIGDIR=/var/lib/edb/as15
 export EFMVERSION=4.8
+export PEMSERVER=192.168.0.112

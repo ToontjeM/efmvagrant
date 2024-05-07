@@ -9,13 +9,13 @@ for server in $servers
 do
     printf "${G}*** Registering agent on $server ***${N}\n"
     vagrant ssh $server -c "sudo PEM_SERVER_PASSWORD=enterprisedb /usr/edb/pem/agent/bin/pemworker --register-agent \
-        --pem-server 192.168.0.112 \
+        --pem-server ${PEMSERVER} \
         --pem-port 5444 \
         --pem-user enterprisedb"
     printf "${G}*** Registering $server in PEM ***${N}\n"
     vagrant ssh $server -c "sudo PEM_SERVER_PASSWORD=enterprisedb PEM_MONITORED_SERVER_PASSWORD=enterprisedb /usr/edb/pem/agent/bin/pemworker --register-server \
         --pem-user enterprisedb \
-        --server-addr 192.168.0.112 \
+        --server-addr ${PEMSERVER} \
         --server-port 5444 \
         --server-database edb \
         --server-user enterprisedb \

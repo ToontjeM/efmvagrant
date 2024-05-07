@@ -1,14 +1,14 @@
-# EDB Failover Manager demo (WIP)
+# EDB Failover Manager demo
 
 ## Intro
 This demo is deployed using Vagrant and will deploy the following nodes:
 ![](https://www.enterprisedb.com/docs/static/68da4913f0bb3b9a09585ec16cf63c5f/0c69d/failover_manager_overview.png)
 | Name | IP | Cluster | Task | Remarks |
 | -------- | -------- | ----- | -------- | -------- |
-| witness | 192.168.0.210 | TBD | EFM witness |  |
-| primary | 192.168.0.211 | TBD | Postgres Primary | |
-| replica | 192.168.0.212 | TBD | Replica of Primary |  |
-| VIP | 192.168.0.220 | TBD | EFM VIP address | |
+| witness | 192.168.0.210 | efm | EFM witness |  |
+| primary | 192.168.0.211 | efm | Postgres Primary | |
+| standby | 192.168.0.212 | efm | Replica of Primary |  |
+| VIP | 192.168.0.220 | efm | EFM VIP address | |
 
 ## Demo prep
 ### Pre-requisites
@@ -20,75 +20,23 @@ To deploy this demo the following needs to be installed in the PC from which you
 - Vagrant Reload plug-in (`vagrant plugin install vagrant-reload`)
 - A file called `.edbtoken` with your EDB repository 2.0 token. This token can be found in your EDB account profile here: https://www.enterprisedb.com/accounts/profile
 
-The environment is deloyed in a VirtualBox provate network. Adjust the IP addresses to your needs in `vars.yml`.
+The environment is deloyed in a VirtualBox **public** network. Adjust the IP addresses to your needs in `vars.yml`.
 
-The EFM cluster which is created is called `dontknowyet`. 
+The EFM cluster which is created is called `efm`. 
 
-Status of the EFM cluster can be shown using `/usr/edb/efm-4.8/bin/efm cluster-status pgcluster` from `primary` and as user `efm`.
+Status of the EFM cluster can be shown using `/usr/edb/efm-4.8/bin/efm cluster-status pgcluster` from `primary` and as user `efm`. The provisioning process will also show you the progress of the cluster while the three machines are configured.
 
 ### Provisioning VM's.
 Provision the hosts using `vagrant up`. This will create the bare virtual machines and will take appx. 5 minutes to complete. 
 
 After provisioning, the hosts will have the current directory mounted in their filesystem under `/vagrant`
 
-*It is recommended to reboot (`00-reboot.sh`) the three servers after provisioning since a lot of updates have been insalled.*
-
-### Configuring software
-
-| Step | Server | Action | User | Script | Remarks |
-| -------- | -------- | ----- | -------- | -------- | ------ |
-| 1 | Primary | Configure replication | enterprisedb | `01-configureReplicationPrimary.sh` |  |
-| 2 | Standby | Configure replication | enterprisedb | `02-configureStandby.sh` |  |
-| 3 |  |  |  |  |  |
-
 ### Passwords
-
-### Configuring pgbench
-The provisioning script initializes Pgbench into the `postgres` database on `pg1` and creates a 30 min schedule cron to run pgbench on this database. 
+All passwords for the users `postgres`, `enterprisedb` en `efm` are the same as the usernames.
 
 ## Extra
 ### Configuring EFM in PEM
-Deploy the PEM agent into the three servers using `10-deployPEMagent.sh`.
-Register the servers in PEM using `11-registerPEMagents.sh`.
-After registering the agents in PEM, discoonect the servers and add the EFM parameters to the advanced properties of the agents. 
-```
-EFM cluster name : TBD
-EFM installation path : /usr/edb/efm-4.8/bin/
-```
-Now that we are in the agent configuration it is also a good idea to add the serviceID to the agent configuration. Since we are using EDB Postgres Advanced Server 15, the ServiceID is `edb-as-15`.
-
-You can check the EFM cluster status by doing the following:
-```
-$ vagrant ssh pg1
-Last login: Thu Apr  4 09:58:00 2024 from 10.0.2.2
-[vagrant@pg1 ~]$ sudo su - efm
-Last login: Thu Apr  4 11:01:25 UTC 2024 on pts/0
-[efm@pg1 ~]$ /usr/edb/efm-4.8/bin/efm cluster-status pgcluster
-Cluster Status: pgcluster
-
-	Agent Type  Address              DB       VIP
-	----------------------------------------------------------------
-	Primary     192.168.0.211        UP
-	Standby     192.168.0.212        UP
-	Witness     192.168.0.213        N/A
-
-Allowed node host list:
-	192.168.0.213 192.168.0.211 192.168.0.212 192.168.0.214
-
-Membership coordinator: 192.168.0.213
-
-Standby priority host list:
-	192.168.0.212
-
-Promote Status:
-
-	DB Type     Address              WAL Received LSN   WAL Replayed LSN   Info
-	---------------------------------------------------------------------------
-	Primary     192.168.0.211                           0/DCB2048
-	Standby     192.168.0.212        0/DCB2048          0/DCB2048
-
-	Standby database(s) in sync with primary. It is safe to promote.
-```
+After provisioning the EFM environment the installation script will ask you if yo want to enroll the servers in PEM. This will call `registerPEM.sh` and assumes an existing PEM server. Please make sure that the correct IP for the PEM server is used in `env.sh`.
 
 ### Enable all probes
 To be able to show all use cases you have to enable extra probes:
