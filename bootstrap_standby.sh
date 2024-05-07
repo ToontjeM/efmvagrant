@@ -110,6 +110,6 @@ printf "${R}*** Status Enterprise Failover Manager ***${N}\n"
 /usr/edb/efm-$EFMVERSION/bin/efm cluster-status efm
 
 #logs
+ps -ef | grep receiver
 cat /var/log/efm-$EFMVERSION/startup-efm.log
 
-sudo su - enterprisedb /vagrant/configureStandby.sh

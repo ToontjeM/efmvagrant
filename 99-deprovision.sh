@@ -2,6 +2,7 @@
 
 . ./env.sh
 
-printf "${G}*** De-provisioning old VM's ***${N}\n"
+. ./deregisterPEM.sh
 
+printf "${G}*** De-provisioning old VM's ***${N}\n"
 vagrant destroy -f

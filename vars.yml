@@ -2,6 +2,7 @@ shared:
   box: generic/rocky9
   network: 192.168.0.21
   networktype: public
+  pemserver: 192.168.0.112
 
 pgnode:
   vm_name: pg
