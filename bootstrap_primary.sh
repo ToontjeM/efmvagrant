@@ -31,23 +31,9 @@ sudo su - enterprisedb -c "psql -c \"create user efm login password 'efm' superu
 printf "${R}*** Configuring pg_hba.conf ***${N}\n"
 sudo su - enterprisedb -c 'echo "
 #Replication parameters
-host    replication     replicator      192.168.0.210/32        md5
-host    replication     replicator      192.168.0.211/32        md5
-host    replication     replicator      192.168.0.212/32        md5
-
-host    edb             replicator      192.168.0.210/32        md5
-host    edb             replicator      192.168.0.211/32        md5
-host    edb             replicator      192.168.0.212/32        md5
-
-host    postgres        replicator      192.168.0.210/32        md5
-host    postgres        replicator      192.168.0.211/32        md5
-host    postgres        replicator      192.168.0.212/32        md5
-
-local   edb             efm                                    md5
-host    edb             efm             192.168.0.210/32       md5
-host    edb             efm             192.168.0.211/32       md5
-host    edb             efm             192.168.0.212/32       md5
-host    edb             efm             192.168.0.220/32       md5
+local   all             all                                 trust
+host    replication     replicator      192.168.0.0/24      trust
+host    all             all             192.168.0.0/24      trust
 
 $(cat /var/lib/edb/as15/data/pg_hba.conf)" > /var/lib/edb/as15/data/pg_hba.conf'
 
@@ -80,7 +66,6 @@ archive_mode = on
 #archive_command = 'cp -i %p /tmp/enterprisedb/archive/%f'
 archive_command = '/bin/true'
 
-
 max_wal_senders=10
 wal_log_hints=on
 hot_standby=on
@@ -93,6 +78,7 @@ wal_compression='on'
 unix_socket_directories = '/tmp'
 checkpoint_timeout='15min'
 checkpoint_completion_target='0.9'
+
 primary_slot_name='replicationslot1'
 
 EOF

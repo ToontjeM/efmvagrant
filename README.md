@@ -45,6 +45,9 @@ To be able to show all use cases you have to enable extra probes:
 - Enable all probes except `xDB Replication` and the `PGD` probes. We are not using PGD here (yet?).
 - Make sure you click the `Save` icon at the top of the table.
 
+## Demo flow
+TBD
+
 ## Demo cleanup
 To clean up the demo environment you just have to run `99-deprovision.sh`. This script will remove the virtual machines and the cluster configuration.
 
