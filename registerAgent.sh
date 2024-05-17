@@ -8,3 +8,5 @@ printf "${G}*** Registering agent for ${HOSTNAME} (${SERVERIP}) in PEM ***${N}\n
     --pem-port 5444 \
     --pem-user ${PEMUSER} \
     --group "EFM demo agents"
+sudo systemctl enable pemagent
+sudo systemctl start pemagent

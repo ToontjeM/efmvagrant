@@ -17,3 +17,5 @@ printf "${G}*** Registering server ${HOSTNAME} (${SERVERIP}) in PEM ***${N}\n"
     --display-name ${HOSTNAME} \
     --group "EFM demo servers" \
     --remote-monitoring no
+
+sudo systemctl restart pemagent
