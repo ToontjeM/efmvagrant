@@ -2,7 +2,7 @@
 
 echo "Configuring witness"
 
-. /vagrant/env.sh
+. /vagrant_config/config.sh
 
 dnf -y install edb-as${EDBVERSION}-server-client
 
@@ -29,7 +29,7 @@ sed -i "s@db.port=@db.port=5444@" /etc/edb/efm-${EFMVERSION}/efm.properties
 sed -i "s@db.database=@db.database=edb@" /etc/edb/efm-${EFMVERSION}/efm.properties
 
 # VIP
-sed -i "s@virtual.ip=@virtual.ip=192.168.0.220@" /etc/edb/efm-${EFMVERSION}/efm.properties
+sed -i "s@virtual.ip=@virtual.ip=192.168.56.20@" /etc/edb/efm-${EFMVERSION}/efm.properties
 sed -i "s@virtual.ip.interface=@virtual.ip.interface=eth1@" /etc/edb/efm-${EFMVERSION}/efm.properties
 sed -i "s@virtual.ip.prefix=@virtual.ip.prefix=24@" /etc/edb/efm-${EFMVERSION}/efm.properties
 
@@ -38,17 +38,17 @@ sed -i "s@db.bin=@db.bin=/usr/edb/as${EDBVERSION}/bin@" /etc/edb/efm-${EFMVERSIO
 sed -i "s@db.data.dir=@db.data.dir=/var/lib/edb/as${EDBVERSION}/data@" /etc/edb/efm-${EFMVERSION}/efm.properties
 sed -i "s@db.config.dir=@db.config.dir=/var/lib/edb/as${EDBVERSION}/data@" /etc/edb/efm-${EFMVERSION}/efm.properties
 sed -i "s@user.email=@user.email=dba\@domain.com@" /etc/edb/efm-${EFMVERSION}/efm.properties
-sed -i "s@bind.address=@bind.address=192.168.0.210:7800@" /etc/edb/efm-${EFMVERSION}/efm.properties
+sed -i "s@bind.address=@bind.address=192.168.56.13:7800@" /etc/edb/efm-${EFMVERSION}/efm.properties
 sed -i "s@is.witness=@is.witness=true@" /etc/edb/efm-${EFMVERSION}/efm.properties
 sed -i "s@auto.allow.hosts=false@auto.allow.hosts=true@" /etc/edb/efm-${EFMVERSION}/efm.properties
 sed -i "s@db.service.owner=@db.service.owner=enterprisedb@" /etc/edb/efm-${EFMVERSION}/efm.properties
-sed -i "s@db.service.name=@db.service.name=edb-as-15@" /etc/edb/efm-${EFMVERSION}/efm.properties
+sed -i "s@db.service.name=@db.service.name=edb-as-${EDBVERSION}@" /etc/edb/efm-${EFMVERSION}/efm.properties
 sed -i "s@log.dir=@log.dir=/var/log/efm-${EFMVERSION}@" /etc/edb/efm-${EFMVERSION}/efm.properties
 
 cat >> /etc/edb/efm-${EFMVERSION}/efm.nodes <<EOF
-192.168.0.211:7800
-192.168.0.212:7800
-192.168.0.220:7800
+192.168.56.11:7800
+192.168.56.12:7800
+192.168.56.13:7800
 EOF
 
 #PATH modification

@@ -1,8 +1,9 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-require 'yaml'
-vars = YAML.load_file 'vars.yml'
+# VM
+var_box            = "bento/almalinux-9.5"
+var_box_version    = "202502.21.0"
 
 Vagrant.configure("2") do |config|
 
@@ -10,52 +11,59 @@ Vagrant.configure("2") do |config|
     config.vbguest.auto_update = false
   end
 
+  # Box
+  config.vm.box = var_box
+  config.vm.box_version = var_box_version
+
+  # Share files
+#  config.vm.synced_folder ".", "/vagrant", type: "rsync"
+#  config.vm.synced_folder "./scripts", "/vagrant_scripts", type: "rsync"
+#  config.vm.synced_folder "./config", "/vagrant_config", type: "rsync"
+#  config.vm.synced_folder "#{ENV['HOME']}/tokens", "/tokens", type: "rsync"
   config.vm.synced_folder ".", "/vagrant"
-  config.vm.provision "shell", path: "bootstrap_general.sh"
+  config.vm.synced_folder "./scripts", "/vagrant_scripts"
+  config.vm.synced_folder "./config", "/vagrant_config"
+  config.vm.synced_folder "#{ENV['HOME']}/tokens", "/tokens"
+  config.vm.provision "shell", path: "scripts/bootstrap_general.sh"
   config.vm.provision :hosts, :sync_hosts => true
 
   # primary
-  config.vm.define "primary" do |node|
-    node.vm.box               = vars['shared']['box']
-    node.vm.box_check_update  = false
-    node.vm.hostname          = "primary"
-    node.vm.network vars['shared']['networktype'] + "_network", ip: vars['shared']['network'] + "1", bridge: "enx24f5a28b44a6"
+  config.vm.define "pg1" do |node|
+    node.vm.box               = var_box
+    node.vm.hostname          = "pg1"
+    node.vm.network  "private_network", ip: "192.168.56.11"
     node.vm.provider :virtualbox do |v|
-      v.name    = "primary"
-      v.memory  = vars['pgnode']['mem_size']
-      v.cpus    = vars['pgnode']['cpus']
+      v.name    = "pg1"
+      v.memory  = 2048
+      v.cpus    = 2
     end      
-    node.vm.provision "shell", path: "bootstrap_primary.sh"
+    node.vm.provision "shell", path: "scripts/bootstrap_pg1.sh"
   end
 
   # standby
-  config.vm.define "standby" do |node|
-    node.vm.box               = vars['shared']['box']
-    node.vm.box_check_update  = false
+  config.vm.define "pg2" do |node|
+    node.vm.box               = var_box
     node.vm.hostname          = "standby"
-    node.vm.network vars['shared']['networktype'] + "_network", ip: vars['shared']['network'] + "2", bridge: "enx24f5a28b44a6"
+    node.vm.network  "private_network", ip: "192.168.56.12"
     node.vm.provider :virtualbox do |v|
-      v.name    = "standby"
-      v.memory  = vars['pgnode']['mem_size']
-      v.cpus    = vars['pgnode']['cpus']
+      v.name    = "pg2"
+      v.memory  = 2048
+      v.cpus    = 2
     end      
-    node.vm.provision "shell", path: "bootstrap_standby.sh"
+    node.vm.provision "shell", path: "scripts/bootstrap_pg2.sh"
   end
 
   # witness node
-  config.vm.define "witness" do |node|
-    node.vm.box               = vars['shared']['box']
-    node.vm.box_check_update  = false
-    node.vm.hostname          = "witness"
-    node.vm.network vars['shared']['networktype'] + "_network", ip: vars['shared']['network'] + "0", bridge: "enx24f5a28b44a6"
+  config.vm.define "w1" do |node|
+    node.vm.box               = var_box
+    node.vm.hostname          = "w1"
+    node.vm.network  "private_network", ip: "192.168.56.13"
     node.vm.provider :virtualbox do |v|
-      v.name    = "witness"
-      v.memory  = vars['witness']['mem_size']
-      v.cpus    = vars['witness']['cpus']
+      v.name    = "w1"
+      v.memory  = 1024
+      v.cpus    = 1
     end
-    node.vm.provision "shell", path: "bootstrap_witness.sh"
+    node.vm.provision "shell", path: "scripts/bootstrap_w1.sh"
   end 
 
-  # Reboot all nodes after provisioning
-  config.vm.provision :reload
 end

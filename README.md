@@ -5,10 +5,10 @@ This demo is deployed using Vagrant and will deploy the following nodes:
 ![](https://www.enterprisedb.com/docs/static/68da4913f0bb3b9a09585ec16cf63c5f/0c69d/failover_manager_overview.png)
 | Name | IP | Cluster | Task | Remarks |
 | -------- | -------- | ----- | -------- | -------- |
-| witness | 192.168.0.210 | efm | EFM witness |  |
-| primary | 192.168.0.211 | efm | Postgres Primary | |
-| standby | 192.168.0.212 | efm | Replica of Primary |  |
-| VIP | 192.168.0.220 | efm | EFM VIP address | |
+| pg1 | 192.168.56.11 | efm | Postgres Primary |  |
+| pg2 | 192.168.56.12 | efm | Postgres Standby | |
+| w1 | 192.168.56.13 | efm | Witness |  |
+| VIP | 192.168.56.99 | efm | EFM VIP address | |
 
 ## Demo prep
 ### Pre-requisites

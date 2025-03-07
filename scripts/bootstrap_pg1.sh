@@ -1,16 +1,19 @@
 #!/bin/bash
 
-. /vagrant/env.sh
+. /vagrant_config/config.sh
 
-printf "${R}*** Installing EPAS $EDBVERSION on primary ***${N}\n"
+printf "${R}*** Installing EPAS $EDBVERSION on pg1 ***${N}\n"
 dnf -y install edb-as$EDBVERSION-server
 
 printf "${R}*** Starting database ***${N}\n"
 sudo PGSETUP_INITDB_OPTIONS="-E UTF-8" /usr/edb/as$EDBVERSION/bin/edb-as-$EDBVERSION-setup initdb
+# Configure PostgreSQL for remote access
+echo "Configuring PostgreSQL..."
+sudo sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/g" $EDBCONFIGDIR/data/postgresql.conf
 sudo systemctl start edb-as-$EDBVERSION
 sudo su - enterprisedb -c "psql -c \"ALTER ROLE enterprisedb IDENTIFIED BY enterprisedb superuser;\" edb"
 
-printf "${R}*** Configuring EFM $EFMVERSION on primary ***${N}\n"
+printf "${R}*** Configuring EFM $EFMVERSION on  ***${N}\n"
 printf "${R}*** Add enterprisedb to EFM group ***${N}\n"
 usermod -a -G efm enterprisedb
 usermod -aG wheel enterprisedb
@@ -30,17 +33,17 @@ sudo su - enterprisedb -c "psql -c \"create user efm login password 'efm' superu
 
 printf "${R}*** Configuring pg_hba.conf ***${N}\n"
 sudo su - enterprisedb -c 'echo "
-#Replication parameters
+# Replication parameters
 local   all             all                                 trust
-host    replication     replicator      192.168.0.0/24      trust
-host    all             all             192.168.0.0/24      trust
+host    replication     replicator      0.0.0.0/0      trust
+host    all             all             0.0.0.0/0      trust
 
-$(cat /var/lib/edb/as15/data/pg_hba.conf)" > /var/lib/edb/as15/data/pg_hba.conf'
+$(cat /var/lib/edb/as17/data/pg_hba.conf)" > /var/lib/edb/as17/data/pg_hba.conf'
 
 sed -i 's/127\.0\.0\.1\/32/0.0.0.0\/0/g' $EDBCONFIGDIR/data/pg_hba.conf
 
 printf "${R}*** Restart database ***${N}\n"
-sudo su - enterprisedb -c "/usr/edb/as15/bin/pg_ctl -D /var/lib/edb/as15/data restart"
+sudo su - enterprisedb -c "/usr/edb/as17/bin/pg_ctl -D /var/lib/edb/as17/data restart"
 
 printf "${G}*** Create replication user ***${N}\n"
 sudo su - enterprisedb -c "psql edb <<EOF
@@ -59,7 +62,7 @@ chmod 700 $EDBCONFIGDIR/data/archivedir
 mkdir -p $EDBCONFIGDIR/data/conf.d
 chown enterprisedb:enterprisedb $EDBCONFIGDIR/data/conf.d
 chmod 700 $EDBCONFIGDIR/data/conf.d
-cat >> /var/lib/edb/as15/data/conf.d/01-replication.conf <<EOF
+cat >> /var/lib/edb/as17/data/conf.d/01-replication.conf <<EOF
 #Streaming replication
 wal_level=replica
 archive_mode = on
@@ -87,9 +90,9 @@ EOF
 
 printf "${G}*** Configure password-less access ***${N}\n"
 cat >> ~/.pgpass <<EOF
-192.168.0.210:5444:*:replication:replicator
-192.168.0.211:5444:*:replication:replicator
-192.168.0.212:5444:*:replication:replicator
+192.168.56.11:5444:*:replication:replicator
+192.168.56.12:5444:*:replication:replicator
+192.168.56.13:5444:*:replication:replicator
 EOF
 chmod 600 ~/.pgpass
 
@@ -99,26 +102,26 @@ sed -i "s@db.password.encrypted=@db.password.encrypted=bc3ebd41e84e67787877b16bd
 sed -i "s@db.port=@db.port=5444@" /etc/edb/efm-$EFMVERSION/efm.properties
 sed -i "s@db.database=@db.database=edb@" /etc/edb/efm-$EFMVERSION/efm.properties
 
-sed -i "s@virtual.ip=@virtual.ip=192.168.0.220@" /etc/edb/efm-$EFMVERSION/efm.properties
+sed -i "s@virtual.ip=@virtual.ip=192.168.56.20@" /etc/edb/efm-$EFMVERSION/efm.properties
 sed -i "s@virtual.ip.interface=@virtual.ip.interface=eth1@" /etc/edb/efm-$EFMVERSION/efm.properties
 sed -i "s@virtual.ip.prefix=@virtual.ip.prefix=24@" /etc/edb/efm-$EFMVERSION/efm.properties
 
 sed -i "s@local.timeout=60@local.timeout=15@" /etc/edb/efm-$EFMVERSION/efm.properties
-sed -i "s@db.bin=@db.bin=/usr/edb/as15/bin@" /etc/edb/efm-$EFMVERSION/efm.properties
+sed -i "s@db.bin=@db.bin=/usr/edb/as17/bin@" /etc/edb/efm-$EFMVERSION/efm.properties
 sed -i "s@db.data.dir=@db.data.dir=$EDBCONFIGDIR/data@" /etc/edb/efm-$EFMVERSION/efm.properties
 sed -i "s@db.config.dir=@db.config.dir=$EDBCONFIGDIR/data@" /etc/edb/efm-$EFMVERSION/efm.properties
 sed -i "s@user.email=@user.email=dba\@domain.com@" /etc/edb/efm-$EFMVERSION/efm.properties
-sed -i "s@bind.address=@bind.address=192.168.0.211:7800@" /etc/edb/efm-$EFMVERSION/efm.properties
+sed -i "s@bind.address=@bind.address=192.168.56.11:7800@" /etc/edb/efm-$EFMVERSION/efm.properties
 sed -i "s@is.witness=@is.witness=false@" /etc/edb/efm-$EFMVERSION/efm.properties
 sed -i "s@auto.allow.hosts=false@auto.allow.hosts=true@" /etc/edb/efm-$EFMVERSION/efm.properties
 sed -i "s@db.service.owner=@db.service.owner=enterprisedb@" /etc/edb/efm-$EFMVERSION/efm.properties
-sed -i "s@db.service.name=@db.service.name=edb-as-15@" /etc/edb/efm-$EFMVERSION/efm.properties
-sed -i "s@log.dir=@log.dir=/var/log/efm-$EFMVERSION@" /etc/edb/efm-$EFMVERSION/efm.properties
+sed -i "s@db.service.name=@db.service.name=edb-as-17@" /etc/edb/efm-$EFMVERSION/efm.properties
+sed -i "s@log.dir=@log.dir=/var/log/efm-${EFMVERSION}@" /etc/edb/efm-$EFMVERSION/efm.properties
 
 cat >> /etc/edb/efm-$EFMVERSION/efm.nodes <<EOF
-192.168.0.210:7800
-192.168.0.211:7800
-192.168.0.212:7800
+192.168.56.11:7800
+192.168.56.12:7800
+192.168.56.13:7800
 EOF
 
 printf "${R}*** Setting path for EFM and Enterprisedb users ***${N}\n"
@@ -132,7 +135,7 @@ export PATH=\$PATH:/usr/edb/efm-$EFMVERSION/bin:/usr/edb/as$EDBVERSION/bin
 EOF
 
 printf "${R}*** Restart database ***${N}\n"
-sudo su - enterprisedb -c "/usr/edb/as15/bin/pg_ctl -D /var/lib/edb/as15/data stop"
+sudo su - enterprisedb -c "/usr/edb/as17/bin/pg_ctl -D /var/lib/edb/as17/data stop"
 sudo systemctl enable edb-as-$EDBVERSION
 sudo systemctl restart edb-as-$EDBVERSION
 sudo systemctl status edb-as-$EDBVERSION

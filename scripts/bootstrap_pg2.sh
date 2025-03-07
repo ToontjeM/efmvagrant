@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. /vagrant/env.sh
+. /vagrant_config/config.sh
 
 printf "${R}*** Installing EPAS $EDBVERSION on standby ***${N}\n"
 dnf -y install edb-as$EDBVERSION-server
@@ -8,6 +8,7 @@ dnf -y install edb-as$EDBVERSION-server
 printf "${R}*** Starting database ***${N}\n"
 usermod -aG wheel enterprisedb
 sudo PGSETUP_INITDB_OPTIONS="-E UTF-8" /usr/edb/as$EDBVERSION/bin/edb-as-$EDBVERSION-setup initdb
+sudo sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/g" $EDBCONFIGDIR/data/postgresql.conf
 sudo systemctl start edb-as-$EDBVERSION
 sudo su - enterprisedb -c "psql -c \"ALTER ROLE enterprisedb IDENTIFIED BY enterprisedb superuser;\" edb"
 usermod -a -G efm enterprisedb
@@ -25,20 +26,20 @@ GRANT EXECUTE ON FUNCTION pg_ls_dir(text, boolean, boolean) TO replicator;
 GRANT EXECUTE ON function pg_stat_file(text, boolean) TO replicator;
 EOF"
 
-sudo systemctl stop edb-as-15
+sudo systemctl stop edb-as-${EDBVERSION}
 cp -R /var/lib/edb/as${EDBVERSION}/data /var/lib/edb/as${EDBVERSION}/data_origin
 rm -Rf /var/lib/edb/as${EDBVERSION}/data
 
 sudo su - enterprisedb -c "cat >> ~/.pgpass <<EOF
-192.168.0.211:5444:*:replicator:replicator
-192.168.0.212:5444:*:replicator:replicator
+192.168.56.11:5444:*:replicator:replicator
+192.168.56.12:5444:*:replicator:replicator
 EOF"
 
 printf "${R}*** Remove database and restore backup from primary ***${N}\n"
 sudo su - enterprisedb -c "chmod 600 ~/.pgpass"
 sudo su - enterprisedb -c "mkdir -p /tmp/enterprisedb/backup"
 sudo su - enterprisedb -c "mkdir -p /tmp/enterprisedb/archive"
-sudo su - enterprisedb -c "pg_basebackup -h 192.168.0.211 -p 5444 -U replicator -R -P -X stream -D /var/lib/edb/as${EDBVERSION}/data"
+sudo su - enterprisedb -c "pg_basebackup -h 192.168.56.11 -p 5444 -U replicator -R -P -X stream -D /var/lib/edb/as${EDBVERSION}/data"
 
 sudo su - enterprisedb -c "cat >> /var/lib/edb/as${EDBVERSION}/data/postgresql.conf <<EOF
 #Streaming replication
@@ -46,7 +47,7 @@ primary_conninfo = 'application_name=instance2'
 primary_slot_name='replicationslot2'
 
 EOF"
-sudo systemctl restart edb-as-15
+sudo systemctl restart edb-as-${EDBVERSION}
 
 printf "${R}*** EFM configuration ***${N}\n"
 cd /etc/edb/efm-$EFMVERSION
@@ -62,7 +63,7 @@ sed -i "s@db.password.encrypted=@db.password.encrypted=bc3ebd41e84e67787877b16bd
 sed -i "s@db.port=@db.port=5444@" /etc/edb/efm-${EFMVERSION}/efm.properties
 sed -i "s@db.database=@db.database=edb@" /etc/edb/efm-${EFMVERSION}/efm.properties
 
-sed -i "s@virtual.ip=@virtual.ip=192.168.0.220@" /etc/edb/efm-${EFMVERSION}/efm.properties
+sed -i "s@virtual.ip=@virtual.ip=192.168.56.20@" /etc/edb/efm-${EFMVERSION}/efm.properties
 sed -i "s@virtual.ip.interface=@virtual.ip.interface=eth1@" /etc/edb/efm-${EFMVERSION}/efm.properties
 sed -i "s@virtual.ip.prefix=@virtual.ip.prefix=24@" /etc/edb/efm-${EFMVERSION}/efm.properties
 
@@ -71,7 +72,7 @@ sed -i "s@db.bin=@db.bin=/usr/edb/as${EDBVERSION}/bin@" /etc/edb/efm-${EFMVERSIO
 sed -i "s@db.data.dir=@db.data.dir=/var/lib/edb/as${EDBVERSION}/data@" /etc/edb/efm-${EFMVERSION}/efm.properties
 sed -i "s@db.config.dir=@db.config.dir=/var/lib/edb/as${EDBVERSION}/data@" /etc/edb/efm-${EFMVERSION}/efm.properties
 sed -i "s@user.email=@user.email=dba\@domain.com@" /etc/edb/efm-${EFMVERSION}/efm.properties
-sed -i "s@bind.address=@bind.address=192.168.0.212:7800@" /etc/edb/efm-${EFMVERSION}/efm.properties
+sed -i "s@bind.address=@bind.address=192.168.56.12:7800@" /etc/edb/efm-${EFMVERSION}/efm.properties
 sed -i "s@is.witness=@is.witness=false@" /etc/edb/efm-${EFMVERSION}/efm.properties
 sed -i "s@auto.allow.hosts=false@auto.allow.hosts=true@" /etc/edb/efm-${EFMVERSION}/efm.properties
 sed -i "s@db.service.owner=@db.service.owner=enterprisedb@" /etc/edb/efm-${EFMVERSION}/efm.properties
@@ -79,9 +80,9 @@ sed -i "s@db.service.name=@db.service.name=edb-as-${EDBVERSION}@" /etc/edb/efm-$
 sed -i "s@log.dir=@log.dir=/var/log/efm-${EFMVERSION}@" /etc/edb/efm-${EFMVERSION}/efm.properties
 
 cat >> /etc/edb/efm-${EFMVERSION}/efm.nodes <<EOF
-192.168.0.211:7800
-192.168.0.212:7800
-192.168.0.220:7800
+192.168.56.11:7800
+192.168.56.12:7800
+192.168.56.20:7800
 EOF
 
 printf "${R}*** Setting path for EFM and Enterprisedb users ***${N}\n"
@@ -95,7 +96,7 @@ export PATH=\$PATH:/usr/edb/efm-$EFMVERSION/bin:/usr/edb/as$EDBVERSION/bin
 EOF
 
 printf "${R}*** Setting standby signal ***${N}\n"
-sudo su - enterprisedb -c "touch /var/lib/edb/as15/data/standby.signal"
+sudo su - enterprisedb -c "touch /var/lib/edb/as${EDBVERSION}/data/standby.signal"
 
 printf "${R}*** Restart database ***${N}\n"
 sudo systemctl enable edb-as-$EDBVERSION
