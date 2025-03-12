@@ -82,7 +82,7 @@ sed -i "s@log.dir=@log.dir=/var/log/efm-${EFMVERSION}@" /etc/edb/efm-${EFMVERSIO
 cat >> /etc/edb/efm-${EFMVERSION}/efm.nodes <<EOF
 192.168.56.11:7800
 192.168.56.12:7800
-192.168.56.20:7800
+192.168.56.13:7800
 EOF
 
 printf "${R}*** Setting path for EFM and Enterprisedb users ***${N}\n"
