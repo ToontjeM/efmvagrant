@@ -72,18 +72,24 @@ Promote Status:
 
 **W1**
 - `sudo su - efm`
-- `watch sudo /usr/edb/efm-4.10/bin/efm cluster-status efm` | |
+- `watch sudo /usr/edb/efm-4.10/bin/efm cluster-status efm`
 
 **Client**
 - `01-client_create_table.sh`
   ```
+  Create table test
+  
+  
   psql -h 192.168.56.20 -U enterprisedb -p 5444 -c 'CREATE TABLE test (id SERIAL PRIMARY KEY, random_text TEXT);' edb
-
+  
   CREATE TABLE
   ```
 
 - `02-client_insert_data.sh`
   ```
+  Insert 100 records in table
+  
+  
   psql -h 192.168.56.20 -U enterprisedb -p 5444 -c 'INSERT INTO test (random_text) SELECT md5(random()::text) FROM generate_series(1, 100);' edb
   
   INSERT 0 100
@@ -92,34 +98,49 @@ Promote Status:
 Show LSN updating on both nodes indicating that replication is working.
 
 - `03-client_show_data.sh`
-```
-psql -h 192.168.56.20 -U enterprisedb -p 5444 -c 'SELECT * FROM test LIMIT 10;' edb
+  ```
+  Show records in database
 
-psql -h 192.168.56.20 -U enterprisedb -p 5444 -c 'SELECT count(*) FROM test;' edb
 
- id |           random_text            
-----+----------------------------------
-  1 | 064b2d6f62f7d2a76957a362b10484b5
-  2 | 1b65525a0b3598a0be87d524fc3431d9
-  3 | c5ddc91f4a64ae00aaab4c926754f497
-  4 | 9d15738d5c94e7a1542052e977905337
-  5 | a0fe83d80a262fc1af30983b6a442a51
-  6 | a0d00a4c8b987e24825ab9dfd41bc6c3
-  7 | 45bfd0729730c16782a376fe98293e42
-  8 | da92e3f0c28bc09b60d8a29a01ddf065
-  9 | b2facaddacc56ac40adbb32253fd106e
- 10 | 21f1c7df9e23e8171082045c5cb5a863
-(10 rows)
-
- count 
--------
-   100
-(1 row)
-```
+  psql -h 192.168.56.20 -U enterprisedb -p 5444 -c 'SELECT * FROM test LIMIT 10;' edb
+  
+   id |           random_text            
+  ----+----------------------------------
+    1 | 6761b3dfe540fee4a09ea840d0f47fa7
+    2 | 07569e5010acb920cd4ed6870338869e
+    3 | ff31d9a5f4e09a9a934575ae106ecad0
+    4 | d402401137f48adbbafa55267af07976
+    5 | 1ac91c404d8456565d3f1d3a0f7060ae
+    6 | 192a19fdd9ea7b4201e99daede797348
+    7 | 14f14ae2cf3e74a8c01580de45dce54c
+    8 | addb099d3dad1fd6de90e62c99f33e54
+    9 | 2a460a667a5c540a39e92eb12e1beca1
+   10 | 31dc792536844d4195f8d721c08815af
+  (10 rows)
+  
+  
+  psql -h 192.168.56.20 -U enterprisedb -p 5444 -c 'SELECT count(*) FROM test;' edb
+  
+   count 
+  -------
+     100
+  (1 row)
+  ```
 
 **PG1**
-- `03-pg1_stop_postgres.sh`
+- `04-pg1_stop_postgres.sh`
+  ```
+  Primary database failure!
+  
+  
+  sudo su - enterprisedb -c 'pg_ctl stop -D '
+  
+  waiting for server to shut down.... done
+  server stopped
+  ```
+
   Notice that EFM will detect Postgres not available and will performa a failover.
+
   ```
   Cluster Status: efm
   
@@ -141,7 +162,7 @@ psql -h 192.168.56.20 -U enterprisedb -p 5444 -c 'SELECT count(*) FROM test;' ed
   
           DB Type     Address              WAL Received LSN   WAL Replayed LSN   Info
           ---------------------------------------------------------------------------
-          Primary     192.168.56.12                           0/40B01C0
+          Primary     192.168.56.12                           0/4049908
   
           No standby databases were found.
   
@@ -155,23 +176,46 @@ psql -h 192.168.56.20 -U enterprisedb -p 5444 -c 'SELECT count(*) FROM test;' ed
 
 **Client**
 - `05-client_show_data.sh`
+
   ```
-  FATAL:  terminating connection due to administrator command
-  server closed the connection unexpectedly
-          This probably means the server terminated abnormally
-          before or while processing the request.
-  The connection to the server was lost. Attempting reset: Succeeded.
-  psql (17.4 (Homebrew), server 17.4.0)
-  WARNING: psql major version 17, server major version 17.
-           Some psql features might not work.
-  edb=# select count(*) from test;
+  Database continues to be available
+
+
+  psql -h 192.168.56.20 -U enterprisedb -p 5444 -c 'SELECT * FROM test LIMIT 10;' edb
+  
+   count 
+  -------
+     100
+  (1 row)
+  
+   id |           random_text            
+  ----+----------------------------------
+    1 | 6761b3dfe540fee4a09ea840d0f47fa7
+    2 | 07569e5010acb920cd4ed6870338869e
+    3 | ff31d9a5f4e09a9a934575ae106ecad0
+    4 | d402401137f48adbbafa55267af07976
+    5 | 1ac91c404d8456565d3f1d3a0f7060ae
+    6 | 192a19fdd9ea7b4201e99daede797348
+    7 | 14f14ae2cf3e74a8c01580de45dce54c
+    8 | addb099d3dad1fd6de90e62c99f33e54
+    9 | 2a460a667a5c540a39e92eb12e1beca1
+   10 | 31dc792536844d4195f8d721c08815af
+  (10 rows)
+  
+  
+  psql -h 192.168.56.20 -U enterprisedb -p 5444 -c 'SELECT count(*) FROM test;' edb
+  
    count 
   -------
      100
   (1 row)
   ```
 - `06-client_insert_more_data.sh`
+
   ```
+  Database continues to be used
+  
+  
   psql -h 192.168.56.20 -U enterprisedb -p 5444 -c 'INSERT INTO test (random_text) SELECT md5(random()::text) FROM generate_series(1, 100);' edb
   
   INSERT 0 100
@@ -179,43 +223,65 @@ psql -h 192.168.56.20 -U enterprisedb -p 5444 -c 'SELECT count(*) FROM test;' ed
 
 **PG1**
 - `07-pg1_start_postgres.sh`
+
   ```
+  Database server is running, trying to reover database
+  
+  
   sudo su - enterprisedb -c 'pg_ctl start -D '
   
-  waiting for server to start....2025-03-12 12:55:32 UTC LOG:  redirecting log output to logging collector process
-  2025-03-12 12:55:32 UTC HINT:  Future log output will appear in directory "log".
+  waiting for server to start....2025-03-13 12:02:08 UTC LOG:  redirecting log output to logging collector process
+  2025-03-13 12:02:08 UTC HINT:  Future log output will appear in directory "log".
    stopped waiting
   pg_ctl: could not start server
   Examine the log output.
   ```
+
 - `08-pg1_show_log.sh
+
   ```
+  Database didn't start to prevent split-brain
+  
+  
   sudo su - enterprisedb -c 'tail -f <latest postgres.log>'
   
-  2025-03-12 12:55:32 UTC LOG:  starting PostgreSQL 17.4 (EnterpriseDB Advanced Server 17.4.0) on x86_64-pc-linux-gnu, compiled by gcc (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5), 64-bit
-  2025-03-12 12:55:32 UTC LOG:  listening on IPv4 address "0.0.0.0", port 5444
-  2025-03-12 12:55:32 UTC LOG:  listening on IPv6 address "::", port 5444
-  2025-03-12 12:55:32 UTC LOG:  listening on Unix socket "/tmp/.s.PGSQL.5444"
-  2025-03-12 12:55:32 UTC LOG:  database system was shut down at 2025-03-12 12:23:04 UTC
-  2025-03-12 12:55:32 UTC FATAL:  using recovery command file "recovery.conf" is not supported
-  2025-03-12 12:55:32 UTC LOG:  startup process (PID 14293) exited with exit code 1
-  2025-03-12 12:55:32 UTC LOG:  aborting startup due to startup process failure
-  2025-03-12 12:55:32 UTC LOG:  database system is shut down
+  2025-03-13 12:02:08 UTC LOG:  starting PostgreSQL 17.4 (EnterpriseDB Advanced Server 17.4.0) on x86_64-pc-linux-gnu, compiled by gcc (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5), 64-bit
+  2025-03-13 12:02:08 UTC LOG:  listening on IPv4 address "0.0.0.0", port 5444
+  2025-03-13 12:02:08 UTC LOG:  listening on IPv6 address "::", port 5444
+  2025-03-13 12:02:08 UTC LOG:  listening on Unix socket "/tmp/.s.PGSQL.5444"
+  2025-03-13 12:02:08 UTC LOG:  database system was shut down at 2025-03-13 11:58:33 UTC
+  2025-03-13 12:02:08 UTC FATAL:  using recovery command file "recovery.conf" is not supported
+  2025-03-13 12:02:08 UTC LOG:  startup process (PID 12567) exited with exit code 1
+  2025-03-13 12:02:08 UTC LOG:  aborting startup due to startup process failure
+  2025-03-13 12:02:08 UTC LOG:  database system is shut down
   ```
 
 - `09-pg1_recover_pg1.sh
-```
-Remove old database'
-rm -rf ${PGDATA}/*
-
-
-Restore database from standby
-pg_basebackup -h pg2 -D /var/lib/edb-as/17/data -U replicator -P -R
-57627/57627 kB (100%), 1/1 tablespace
-
-Restart pg1 as standby'
-sudo systemctl restart edb-as-17
-```
+  ```
+  Recovering old Primary by:
+  
+  
+  1. Remove old database
+  rm -rf $\{PGDATA\}/*
+  
+  
+  2. Restore database from standby
+  pg_basebackup -h pg2 -D $\{PGDATA\} -U replicator -P -R -v -X stream
+  pg_basebackup: initiating base backup, waiting for checkpoint to complete
+  pg_basebackup: checkpoint completed
+  pg_basebackup: write-ahead log start point: 0/5000028 on timeline 2
+  pg_basebackup: starting background WAL receiver
+  pg_basebackup: created temporary replication slot "pg_basebackup_12298"
+  57602/57602 kB (100%), 1/1 tablespace                                         
+  pg_basebackup: write-ahead log end point: 0/5000120
+  pg_basebackup: waiting for background process to finish streaming ...
+  pg_basebackup: syncing data to disk ...
+  pg_basebackup: renaming backup_manifest.tmp to backup_manifest
+  pg_basebackup: base backup completed
+  
+  3. Restart pg1 as standby
+  sudo systemctl restart edb-as-17
+  ```
 
 Show efm cluster status.
 
@@ -224,33 +290,64 @@ Cluster Status: efm
 
         Agent Type  Address              DB       VIP
         ----------------------------------------------------------------
-        Idle        192.168.56.11        UNKNOWN  192.168.56.20
+        Standby     192.168.56.11        UP       192.168.56.20
         Primary     192.168.56.12        UP       192.168.56.20*
         Witness     192.168.56.13        N/A      192.168.56.20
 
 Allowed node host list:
         192.168.56.11 192.168.56.12 192.168.56.13
 
-Membership coordinator: 192.168.56.11
+Membership coordinator: 192.168.56.12
 
 Standby priority host list:
-        (List is empty.)
+        192.168.56.11
 
 Promote Status:
 
         DB Type     Address              WAL Received LSN   WAL Replayed LSN   Info
         ---------------------------------------------------------------------------
         Primary     192.168.56.12                           0/6000060
+        Standby     192.168.56.11        0/6000060          0/6000060
 
-        No standby databases were found.
-
-Idle Node Status (idle nodes ignored in WAL LSN comparisons):
-
-        Address              WAL Received LSN   WAL Replayed LSN   Info
-        ---------------------------------------------------------------
-        192.168.56.11        0/6000000          0/6000000          DB is in recovery.
+        Standby database(s) in sync with primary. It is safe to promote.
 ```
 
+- `10-pg1_switchover.sh
+  ```
+  Switching pg1 back to Primary
+  
+  
+  /usr/edb/efm-4.10/bin/efm promote efm -switchover
+  Promote/switchover command accepted by local agent. Proceeding with promotion and will reconfigure original primary. Run the 'cluster-status' command for information about the new cluster state.
+  ```
+
+EFM cluster status.
+```
+Cluster Status: efm
+
+        Agent Type  Address              DB       VIP
+        ----------------------------------------------------------------
+        Primary     192.168.56.11        UP       192.168.56.20*
+        Standby     192.168.56.12        UP       192.168.56.20
+        Witness     192.168.56.13        N/A      192.168.56.20
+
+Allowed node host list:
+        192.168.56.11 192.168.56.12 192.168.56.13
+
+Membership coordinator: 192.168.56.12
+
+Standby priority host list:
+        192.168.56.12
+
+Promote Status:
+
+        DB Type     Address              WAL Received LSN   WAL Replayed LSN   Info
+        ---------------------------------------------------------------------------
+        Primary     192.168.56.11                           0/6000250
+        Standby     192.168.56.12        0/6000000          0/60000D8
+
+        One or more standby databases are not in sync with the primary database. The following node(s) returned a WAL LSN that does not match the primary: 192.168.56.12
+```
 
 ## Demo cleanup
 To clean up the demo environment you just have to run `99-deprovision.sh`. This script will remove the virtual machines and the cluster configuration.

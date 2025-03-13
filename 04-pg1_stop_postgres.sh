@@ -5,7 +5,7 @@
 red=$(tput setaf 1)
 green=$(tput setaf 2)
 normal=$(tput sgr0)
-
-printf "\n${green}sudo su - enterprisedb -c 'pg_ctl stop -D ${PGDATA}'${normal}\n\n"
+printf "\n${green}Primary database failure!\n\n${normal}"
+printf "\n${red}sudo su - enterprisedb -c 'pg_ctl stop -D ${PGDATA}'${normal}\n\n"
 
 sudo su - enterprisedb -c 'pg_ctl stop -D ${PGDATA}' edb

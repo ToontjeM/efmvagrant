@@ -82,7 +82,7 @@ unix_socket_directories = '/tmp'
 checkpoint_timeout='15min'
 checkpoint_completion_target='0.9'
 
-primary_slot_name='replicationslot1'
+primary_slot_name='pg1'
 
 EOF
 
@@ -141,7 +141,7 @@ sudo systemctl restart edb-as-$EDBVERSION
 sudo systemctl status edb-as-$EDBVERSION
 
 printf "${G}*** Create replication slot ***${N}\n"
-sudo su - enterprisedb -c "psql -c \"SELECT * FROM pg_create_physical_replication_slot('replicationslot2');\" edb"
+sudo su - enterprisedb -c "psql -c \"SELECT * FROM pg_create_physical_replication_slot('pg1');\" edb"
 sudo su - enterprisedb -c "psql -c 'select * from pg_replication_slots;' edb"
 
 ps -ef | grep sender
