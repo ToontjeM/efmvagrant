@@ -39,12 +39,12 @@ printf "${R}*** Remove database and restore backup from primary ***${N}\n"
 sudo su - enterprisedb -c "chmod 600 ~/.pgpass"
 sudo su - enterprisedb -c "mkdir -p /tmp/enterprisedb/backup"
 sudo su - enterprisedb -c "mkdir -p /tmp/enterprisedb/archive"
-sudo su - enterprisedb -c "pg_basebackup -h 192.168.56.11 -p 5444 -U replicator -R -P -X stream -D /var/lib/edb/as${EDBVERSION}/data -C -S slot"
+sudo su - enterprisedb -c "pg_basebackup -h 192.168.56.11 -p 5444 -U replicator -R -P -X stream -D /var/lib/edb/as${EDBVERSION}/data -C -S slot_pg2"
 
 sudo su - enterprisedb -c "cat >> /var/lib/edb/as${EDBVERSION}/data/postgresql.conf <<EOF
 #Streaming replication
 primary_conninfo = 'application_name=instance2'
-primary_slot_name='slot'
+primary_slot_name='slot_pg2'
 
 EOF"
 sudo systemctl restart edb-as-${EDBVERSION}
@@ -56,9 +56,9 @@ cp efm.nodes.in efm.nodes
 chown efm:efm efm.properties
 chown efm:efm efm.nodes
 
-#printf "${G}*** Create replication slot ***${N}\n"
-#sudo su - enterprisedb -c "psql -c \"SELECT * FROM pg_create_physical_replication_slot('slot2');\" edb"
-#sudo su - enterprisedb -c "psql -c 'select * from pg_replication_slots;' edb"
+printf "${G}*** Create replication slot ***${N}\n"
+sudo su - enterprisedb -c "psql -c \"SELECT * FROM pg_create_physical_replication_slot('slot_pg2');\" edb"
+sudo su - enterprisedb -c "psql -c 'select * from pg_replication_slots;' edb"
 
 printf "${R}*** Modify default EFM config ***${N}\n"
 sed -i "s@db.user=@db.user=efm@" /etc/edb/efm-${EFMVERSION}/efm.properties
@@ -71,7 +71,7 @@ sed -i "s@virtual.ip.interface=@virtual.ip.interface=eth1@" /etc/edb/efm-${EFMVE
 sed -i "s@virtual.ip.prefix=@virtual.ip.prefix=24@" /etc/edb/efm-${EFMVERSION}/efm.properties
 
 sed -i "s@local.timeout=60@local.timeout=15@" /etc/edb/efm-${EFMVERSION}/efm.properties
-sed -i "s@update.physical.slots.period=@update.physical.slots.period=5@" /etc/edb/efm-${EFMVERSION}/efm.properties
+sed -i "s@update.physical.slots.period=0@update.physical.slots.period=5@" /etc/edb/efm-${EFMVERSION}/efm.properties
 
 sed -i "s@db.bin=@db.bin=/usr/edb/as${EDBVERSION}/bin@" /etc/edb/efm-${EFMVERSION}/efm.properties
 sed -i "s@db.data.dir=@db.data.dir=/var/lib/edb/as${EDBVERSION}/data@" /etc/edb/efm-${EFMVERSION}/efm.properties
