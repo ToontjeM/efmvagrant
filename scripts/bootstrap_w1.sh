@@ -2,7 +2,7 @@
 
 echo "Configuring witness"
 
-. /vagrant_config/config.sh
+. /config/config.sh
 
 dnf -y install edb-as${EDBVERSION}-server-client
 

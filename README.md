@@ -28,8 +28,8 @@ Provision the demo environment like always using `00-provision.sh`.
 After provisioning, the hosts will have their regular directory mounts as defined in the `Vagrantfile`:
 ```
   config.vm.synced_folder ".", "/vagrant"
-  config.vm.synced_folder "./scripts", "/vagrant_scripts"
-  config.vm.synced_folder "./config", "/vagrant_config"
+  config.vm.synced_folder "./scripts", "/scripts"
+  config.vm.synced_folder "./config", "/config"
   config.vm.synced_folder "#{ENV['HOME']}/tokens", "/tokens"
 ```
 
@@ -237,7 +237,7 @@ Show LSN updating on both nodes indicating that replication is working.
   Examine the log output.
   ```
 
-- `08-pg1_show_log.sh
+- `08-pg1_show_log.sh`
 
   ```
   Database didn't start to prevent split-brain
@@ -256,7 +256,7 @@ Show LSN updating on both nodes indicating that replication is working.
   2025-03-13 12:02:08 UTC LOG:  database system is shut down
   ```
 
-- `09-pg1_recover_pg1.sh
+- `09-pg1_recover_pg1.sh`
   ```
   Recovering old Primary by:
   
@@ -312,7 +312,7 @@ Promote Status:
         Standby database(s) in sync with primary. It is safe to promote.
 ```
 
-- `10-pg1_switchover.sh
+- `10-pg1_switchover.sh`
   ```
   Switching pg1 back to Primary
   
@@ -343,13 +343,15 @@ Promote Status:
 
         DB Type     Address              WAL Received LSN   WAL Replayed LSN   Info
         ---------------------------------------------------------------------------
-        Primary     192.168.56.11                           0/6000250
-        Standby     192.168.56.12        0/6000000          0/60000D8
+        Primary     192.168.56.11                           0/6000218
+        Standby     192.168.56.12        0/6000218          0/6000218
 
-        One or more standby databases are not in sync with the primary database. The following node(s) returned a WAL LSN that does not match the primary: 192.168.56.12
+        Standby database(s) in sync with primary. It is safe to promote.
 ```
 
 ## Demo cleanup
 To clean up the demo environment you just have to run `99-deprovision.sh`. This script will remove the virtual machines and the cluster configuration.
 
 ## TODO / To fix
+Need to manually create the replication slot on `pg1` to make the switch-back successful. This is now incorporated in `10-pg1_switchover.sh`. 
+Investigating.

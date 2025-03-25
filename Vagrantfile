@@ -16,14 +16,10 @@ Vagrant.configure("2") do |config|
   config.vm.box_version = var_box_version
 
   # Share files
-#  config.vm.synced_folder ".", "/vagrant", type: "rsync"
-#  config.vm.synced_folder "./scripts", "/vagrant_scripts", type: "rsync"
-#  config.vm.synced_folder "./config", "/vagrant_config", type: "rsync"
-#  config.vm.synced_folder "#{ENV['HOME']}/tokens", "/tokens", type: "rsync"
-  config.vm.synced_folder ".", "/vagrant"
-  config.vm.synced_folder "./scripts", "/vagrant_scripts"
-  config.vm.synced_folder "./config", "/vagrant_config"
-  config.vm.synced_folder "#{ENV['HOME']}/tokens", "/tokens"
+  config.vm.synced_folder ".", "/vagrant", type: "rsync"
+  config.vm.synced_folder "./scripts", "/scripts", type: "rsync"
+  config.vm.synced_folder "./config", "/config", type: "rsync"
+  config.vm.synced_folder "#{ENV['HOME']}/tokens", "/tokens", type: "rsync"
   config.vm.provision "shell", path: "scripts/bootstrap_general.sh"
   config.vm.provision :hosts, :sync_hosts => true
 
@@ -43,7 +39,7 @@ Vagrant.configure("2") do |config|
   # standby
   config.vm.define "pg2" do |node|
     node.vm.box               = var_box
-    node.vm.hostname          = "standby"
+    node.vm.hostname          = "pg2"
     node.vm.network  "private_network", ip: "192.168.56.12"
     node.vm.provider :virtualbox do |v|
       v.name    = "pg2"

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. /vagrant_config/config.sh
+. /config/config.sh
 
 printf "${R}*** Installing EPAS $EDBVERSION on pg1 ***${N}\n"
 dnf -y install edb-as$EDBVERSION-server
@@ -10,6 +10,11 @@ sudo PGSETUP_INITDB_OPTIONS="-E UTF-8" /usr/edb/as$EDBVERSION/bin/edb-as-$EDBVER
 # Configure PostgreSQL for remote access
 echo "Configuring PostgreSQL..."
 sudo sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/g" $EDBCONFIGDIR/data/postgresql.conf
+sudo su - enterprisedb -c "cat >> /var/lib/edb/as${EDBVERSION}/data/postgresql.conf <<EOF
+# Streaming replication
+primary_conninfo = 'application_name=instance1'
+primary_slot_name='slot'
+EOF"
 sudo systemctl start edb-as-$EDBVERSION
 sudo su - enterprisedb -c "psql -c \"ALTER ROLE enterprisedb IDENTIFIED BY enterprisedb superuser;\" edb"
 
@@ -59,34 +64,21 @@ mkdir -p /tmp/enterprisedb/archive
 mkdir -p $EDBCONFIGDIR/data/archivedir
 chown enterprisedb:enterprisedb $EDBCONFIGDIR/data/archivedir
 chmod 700 $EDBCONFIGDIR/data/archivedir
-mkdir -p $EDBCONFIGDIR/data/conf.d
-chown enterprisedb:enterprisedb $EDBCONFIGDIR/data/conf.d
-chmod 700 $EDBCONFIGDIR/data/conf.d
-cat >> /var/lib/edb/as17/data/conf.d/01-replication.conf <<EOF
-#Streaming replication
-wal_level=replica
-archive_mode = on
-#archive_command = 'cp -i %p /tmp/enterprisedb/archive/%f'
-archive_command = '/bin/true'
 
-max_wal_senders=10
-wal_log_hints=on
-hot_standby=on
-wal_log_hints='on'
-wal_keep_size=160
-synchronous_commit=on
-
-max_replication_slots=10
-wal_compression='on'
-unix_socket_directories = '/tmp'
-checkpoint_timeout='15min'
-checkpoint_completion_target='0.9'
-
-primary_slot_name='pg1'
-
-EOF
-
-
+sed -i "s/#wal_level = .*/wal_level = 'replica'/g" /var/lib/edb/as17/data/postgresql.conf
+sed -i "s/#archive_mode = .*/archive_mode = on/g" /var/lib/edb/as17/data/postgresql.conf
+sed -i "s/#archive_command = .*/archive_command = '\/bin\/true'/g" /var/lib/edb/as17/data/postgresql.conf
+sed -i "s/#max_wal_senders = .*/max_wal_senders = 10/g" /var/lib/edb/as17/data/postgresql.conf
+sed -i "s/#wal_log_hints = .*/wal_log_hints = on/g" /var/lib/edb/as17/data/postgresql.conf
+sed -i "s/#hot_standby = .*/hot_standby = on/g" /var/lib/edb/as17/data/postgresql.conf
+sed -i "s/#wal_keep_size = .*/wal_keep_size = 160/g" /var/lib/edb/as17/data/postgresql.conf
+sed -i "s/#synchronous_commit = .*/synchronous_commit = on/g" /var/lib/edb/as17/data/postgresql.conf
+sed -i "s/#max_replication_slots = .*/max_replication_slots = 10/g" /var/lib/edb/as17/data/postgresql.conf
+sed -i "s/#wal_compression = .*/wal_compression = on/g" /var/lib/edb/as17/data/postgresql.conf
+sed -i "s/#unix_socket_directories = .*/unix_socket_directories = '\/tmp'/g" /var/lib/edb/as17/data/postgresql.conf
+sed -i "s/#checkpoint_timeout = .*/checkpoint_timeout = '15min'/g" /var/lib/edb/as17/data/postgresql.conf
+sed -i "s/#checkpoint_completion_target = .*/checkpoint_completion_target = 0.9/g" /var/lib/edb/as17/data/postgresql.conf
+sed -i "s/#primary_slot_name = .*/primary_slot_name = 'slot'/g" /var/lib/edb/as17/data/postgresql.conf
 
 printf "${G}*** Configure password-less access ***${N}\n"
 cat >> ~/.pgpass <<EOF
@@ -117,6 +109,7 @@ sed -i "s@auto.allow.hosts=false@auto.allow.hosts=true@" /etc/edb/efm-$EFMVERSIO
 sed -i "s@db.service.owner=@db.service.owner=enterprisedb@" /etc/edb/efm-$EFMVERSION/efm.properties
 sed -i "s@db.service.name=@db.service.name=edb-as-17@" /etc/edb/efm-$EFMVERSION/efm.properties
 sed -i "s@log.dir=@log.dir=/var/log/efm-${EFMVERSION}@" /etc/edb/efm-$EFMVERSION/efm.properties
+sed -i "s@update.physical.slots.period=@update.physical.slots.period=5@" /etc/edb/efm-${EFMVERSION}/efm.properties
 
 cat >> /etc/edb/efm-$EFMVERSION/efm.nodes <<EOF
 192.168.56.11:7800
@@ -140,9 +133,9 @@ sudo systemctl enable edb-as-$EDBVERSION
 sudo systemctl restart edb-as-$EDBVERSION
 sudo systemctl status edb-as-$EDBVERSION
 
-printf "${G}*** Create replication slot ***${N}\n"
-sudo su - enterprisedb -c "psql -c \"SELECT * FROM pg_create_physical_replication_slot('pg1');\" edb"
-sudo su - enterprisedb -c "psql -c 'select * from pg_replication_slots;' edb"
+#printf "${G}*** Create replication slot ***${N}\n"
+#sudo su - enterprisedb -c "psql -c \"SELECT * FROM pg_create_physical_replication_slot('slot1');\" edb"
+#sudo su - enterprisedb -c "psql -c 'select * from pg_replication_slots;' edb"
 
 ps -ef | grep sender
 

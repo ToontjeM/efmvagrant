@@ -3,4 +3,4 @@
 . ./config/config.sh
 
 printf "${G}*** Provisioning new VM's ***${N}\n"
-vagrant up --provision
+vagrant up --provision 

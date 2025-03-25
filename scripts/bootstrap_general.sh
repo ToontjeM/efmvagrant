@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. /vagrant_config/config.sh
+. /config/config.sh
 
 printf "${R}*** Running Bootstrap_general.sh ***${N}\n"
 systemctl stop firewalld.service
