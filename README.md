@@ -321,6 +321,8 @@ Promote Status:
   Promote/switchover command accepted by local agent. Proceeding with promotion and will reconfigure original primary. Run the 'cluster-status' command for information about the new cluster state.
   ```
 
+- `11-pg1_cleanup_reploication_slots.sh`
+
 EFM cluster status.
 ```
 Cluster Status: efm
@@ -353,5 +355,4 @@ Promote Status:
 To clean up the demo environment you just have to run `99-deprovision.sh`. This script will remove the virtual machines and the cluster configuration.
 
 ## TODO / To fix
-Need to manually create the replication slot on `pg1` to make the switch-back successful. This is now incorporated in `10-pg1_switchover.sh`. 
-Investigating.
+
