@@ -13,7 +13,7 @@ sudo sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/g" $EDBCON
 sudo su - enterprisedb -c "cat >> /var/lib/edb/as${EDBVERSION}/data/postgresql.conf <<EOF
 # Streaming replication
 primary_conninfo = 'application_name=instance1'
-primary_slot_name='pg1'
+primary_slot_name='slotpg1'
 EOF"
 sudo systemctl start edb-as-$EDBVERSION
 sudo su - enterprisedb -c "psql -c \"ALTER ROLE enterprisedb IDENTIFIED BY enterprisedb superuser;\" edb"
@@ -78,7 +78,7 @@ sed -i "s/#wal_compression = .*/wal_compression = on/g" /var/lib/edb/as17/data/p
 sed -i "s/#unix_socket_directories = .*/unix_socket_directories = '\/tmp'/g" /var/lib/edb/as17/data/postgresql.conf
 sed -i "s/#checkpoint_timeout = .*/checkpoint_timeout = '15min'/g" /var/lib/edb/as17/data/postgresql.conf
 sed -i "s/#checkpoint_completion_target = .*/checkpoint_completion_target = 0.9/g" /var/lib/edb/as17/data/postgresql.conf
-sed -i "s/#primary_slot_name = .*/primary_slot_name = 'pg1'/g" /var/lib/edb/as17/data/postgresql.conf
+sed -i "s/#primary_slot_name = .*/primary_slot_name = 'slotpg1'/g" /var/lib/edb/as17/data/postgresql.conf
 
 printf "${G}*** Configure password-less access ***${N}\n"
 cat >> ~/.pgpass <<EOF
@@ -133,8 +133,8 @@ sudo systemctl enable edb-as-$EDBVERSION
 sudo systemctl restart edb-as-$EDBVERSION
 sudo systemctl status edb-as-$EDBVERSION
 
-printf "${G}*** Create replication slot ***${N}\n"
-sudo su - enterprisedb -c "psql -c \"SELECT * FROM pg_create_physical_replication_slot('pg2');\" edb"
+printf "${G}*** Create replication slot for pg2 ***${N}\n"
+sudo su - enterprisedb -c "psql -c \"SELECT * FROM pg_create_physical_replication_slot('slotpg2');\" edb"
 sudo su - enterprisedb -c "psql -c 'select * from pg_replication_slots;' edb"
 
 ps -ef | grep sender

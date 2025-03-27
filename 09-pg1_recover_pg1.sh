@@ -13,12 +13,12 @@ printf "${red}rm -rf $\{PGDATA\}/*\n${normal}"
 sudo su - enterprisedb -c 'rm -rf ${PGDATA}/*'
 
 printf "\n${green}2. Restore database from standby\n${normal}"
-printf "${red}pg_basebackup -h pg2 -D $\{PGDATA\} -U replicator -P -R -v -X stream -C -S pg2'\n${normal}"
+printf "${red}pg_basebackup -h pg2 -D $\{PGDATA\} -U replicator -P -R -v -X stream -C -S slotpg1'\n${normal}"
 
-sudo su - enterprisedb -c 'pg_basebackup -h pg2 -D ${PGDATA} -U replicator -P -R -v -X stream -C -S pg2'
+sudo su - enterprisedb -c 'pg_basebackup -h pg2 -D ${PGDATA} -U replicator -P -R -v -X stream -C -S slotpg1'
 
 printf "\n${green}3. Restart pg1 as standby\n${normal}"
 printf "${red}sudo systemctl restart edb-as-17\n${normal}"
 
 sudo systemctl restart edb-as-17
-sudo systemctl restart edb-efm-4.10
+sudo su - efm -c '/usr/edb/efm-4.10/bin/efm resume efm'

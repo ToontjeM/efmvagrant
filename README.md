@@ -321,8 +321,6 @@ Promote Status:
   Promote/switchover command accepted by local agent. Proceeding with promotion and will reconfigure original primary. Run the 'cluster-status' command for information about the new cluster state.
   ```
 
-- `11-pg1_cleanup_reploication_slots.sh`
-
 EFM cluster status.
 ```
 Cluster Status: efm

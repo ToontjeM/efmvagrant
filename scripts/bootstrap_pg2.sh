@@ -40,11 +40,10 @@ sudo su - enterprisedb -c "chmod 600 ~/.pgpass"
 sudo su - enterprisedb -c "mkdir -p /tmp/enterprisedb/backup"
 sudo su - enterprisedb -c "mkdir -p /tmp/enterprisedb/archive"
 sudo su - enterprisedb -c "pg_basebackup -h 192.168.56.11 -p 5444 -U replicator -R -P -X stream -D /var/lib/edb/as${EDBVERSION}/data"
-
 sudo su - enterprisedb -c "cat >> /var/lib/edb/as${EDBVERSION}/data/postgresql.conf <<EOF
 #Streaming replication
 primary_conninfo = 'application_name=instance2'
-primary_slot_name='pg2'
+primary_slot_name='slotpg2'
 
 EOF"
 sudo systemctl restart edb-as-${EDBVERSION}
@@ -55,10 +54,6 @@ cp efm.properties.in efm.properties
 cp efm.nodes.in efm.nodes
 chown efm:efm efm.properties
 chown efm:efm efm.nodes
-
-#printf "${G}*** Create replication slot ***${N}\n"
-#sudo su - enterprisedb -c "psql -c \"SELECT * FROM pg_create_physical_replication_slot('pg2');\" edb"
-#sudo su - enterprisedb -c "psql -c 'select * from pg_replication_slots;' edb"
 
 printf "${R}*** Modify default EFM config ***${N}\n"
 sed -i "s@db.user=@db.user=efm@" /etc/edb/efm-${EFMVERSION}/efm.properties
@@ -112,6 +107,9 @@ sudo systemctl status edb-as-$EDBVERSION
 printf "${R}*** Start EDB Enterprise Failover Manager ***${N}\n"
 systemctl enable edb-efm-$EFMVERSION
 systemctl start edb-efm-$EFMVERSION
+
+printf "${R}*** Remove replication slot ***${N}\n"
+sudo su - enterprisedb -c "psql -U enterprisedb -c \"SELECT pg_drop_replication_slot('slotpg1');\" edb"
 
 printf "${R}*** Status Enterprise Failover Manager ***${N}\n"
 /usr/edb/efm-$EFMVERSION/bin/efm cluster-status efm
