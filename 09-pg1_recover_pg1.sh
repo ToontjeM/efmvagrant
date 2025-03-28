@@ -7,12 +7,17 @@ green=$(tput setaf 2)
 normal=$(tput sgr0)
 
 printf "\n${green}Recovering old Primary by:\n\n${normal}"
+
 printf "${green}1. Remove old database\n${normal}"
 printf "${red}rm -rf $\{PGDATA\}/*\n${normal}"
 
 sudo su - enterprisedb -c 'rm -rf ${PGDATA}/*'
 
-printf "\n${green}2. Restore database from standby\n${normal}"
+printf "${green}2. Remove replication slot from the Primary ${normal}"
+printf "${red}SELECT pg_drop_replication_slot('slotpg1')\n${normal}"
+sudo su - enterprisedb -c "psql -U enterprisedb -h pg2 -c \"SELECT pg_drop_replication_slot('slotpg1');\" edb"
+
+printf "\n${green}3. Restore database from standby and recreate replication slot\n${normal}"
 printf "${red}pg_basebackup -h pg2 -D $\{PGDATA\} -U replicator -P -R -v -X stream -C -S slotpg1'\n${normal}"
 
 sudo su - enterprisedb -c 'pg_basebackup -h pg2 -D ${PGDATA} -U replicator -P -R -v -X stream -C -S slotpg1'

@@ -108,13 +108,10 @@ printf "${R}*** Start EDB Enterprise Failover Manager ***${N}\n"
 systemctl enable edb-efm-$EFMVERSION
 systemctl start edb-efm-$EFMVERSION
 
-printf "${R}*** Remove replication slot ***${N}\n"
-sudo su - enterprisedb -c "psql -U enterprisedb -c \"SELECT pg_drop_replication_slot('slotpg1');\" edb"
-
 printf "${R}*** Status Enterprise Failover Manager ***${N}\n"
 /usr/edb/efm-$EFMVERSION/bin/efm cluster-status efm
 
-#logs
+# Logs
 ps -ef | grep receiver
 cat /var/log/efm-$EFMVERSION/startup-efm.log
 
