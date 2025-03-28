@@ -26,4 +26,4 @@ printf "\n${green}3. Restart pg1 as standby\n${normal}"
 printf "${red}sudo systemctl restart edb-as-17\n${normal}"
 
 sudo systemctl restart edb-as-17
-sudo su - efm -c '/usr/edb/efm-4.10/bin/efm resume efm'
+sudo su - efm -c '/usr/edb/efm-5.0/bin/efm resume efm'

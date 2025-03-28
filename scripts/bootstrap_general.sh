@@ -18,5 +18,5 @@ dnf update && dnf -y upgrade
 printf "${R}*** Installing dependencies ***${N}\n"
 dnf -y install java-21-openjdk
 
-printf "${R}*** Installing EFM 4.10 on all nodes ***${N}\n"
-dnf -y install edb-efm410
+printf "${R}*** Installing EFM on all nodes ***${N}\n"
+dnf -y install edb-efm50

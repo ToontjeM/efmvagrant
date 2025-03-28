@@ -146,7 +146,4 @@ systemctl start edb-efm-$EFMVERSION
 printf "${R}*** Status Enterprise Failover Manager ***${N}\n"
 /usr/edb/efm-$EFMVERSION/bin/efm cluster-status efm
 
-#logs
-cat /var/log/efm-$EFMVERSION/startup-efm.log
-
-
+printf "*********** FINISHED PG1 *************"

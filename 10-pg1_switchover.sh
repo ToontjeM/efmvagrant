@@ -8,5 +8,5 @@ normal=$(tput sgr0)
 
 printf "${green}Performing switchover\n${normal}"
 
-printf "${red}/usr/edb/efm-4.10/bin/efm promote efm -switchover\n\n${normal}"
-sudo su - enterprisedb -c '/usr/edb/efm-4.10/bin/efm promote efm -switchover'
+printf "${red}/usr/edb/efm-5.0/bin/efm promote efm -switchover\n\n${normal}"
+sudo su - enterprisedb -c '/usr/edb/efm-5.0/bin/efm promote efm -switchover'

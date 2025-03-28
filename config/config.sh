@@ -15,4 +15,4 @@ fi
 # Environment variables
 export EDBVERSION=17
 export EDBCONFIGDIR=/var/lib/edb/as17
-export EFMVERSION=4.10
+export EFMVERSION=5.0

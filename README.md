@@ -38,9 +38,9 @@ All passwords for the users `postgres`, `enterprisedb` en `efm` are the same as 
 
 The EFM cluster which is created is called `efm`. 
 
-Status of the EFM cluster can be shown using `/usr/edb/efm-4.10/bin/efm cluster-status efm` from `pg1` and as user `efm`. The provisioning process will also show you the progress of the cluster while the three machines are configured.
+Status of the EFM cluster can be shown using `/usr/edb/efm-5.0/bin/efm cluster-status efm` from `pg1` and as user `efm`. The provisioning process will also show you the progress of the cluster while the three machines are configured.
 ```
-[efm@pg1 ~]$ /usr/edb/efm-4.10/bin/efm cluster-status efm
+[efm@pg1 ~]$ /usr/edb/efm-5.0/bin/efm cluster-status efm
 Cluster Status: efm
 
         Agent Type  Address              DB       VIP
@@ -72,7 +72,7 @@ Promote Status:
 
 **W1**
 - `sudo su - efm`
-- `watch sudo /usr/edb/efm-4.10/bin/efm cluster-status efm`
+- `watch sudo /usr/edb/efm-5.0/bin/efm cluster-status efm`
 
 **Client**
 - `01-client_create_table.sh`
@@ -317,7 +317,7 @@ Promote Status:
   Switching pg1 back to Primary
   
   
-  /usr/edb/efm-4.10/bin/efm promote efm -switchover
+  /usr/edb/efm-5.0/bin/efm promote efm -switchover
   Promote/switchover command accepted by local agent. Proceeding with promotion and will reconfigure original primary. Run the 'cluster-status' command for information about the new cluster state.
   ```
 
@@ -353,4 +353,4 @@ Promote Status:
 To clean up the demo environment you just have to run `99-deprovision.sh`. This script will remove the virtual machines and the cluster configuration.
 
 ## TODO / To fix
-
+Need to use the `efm create-standby` command in sctipt 9 to create a new standby.

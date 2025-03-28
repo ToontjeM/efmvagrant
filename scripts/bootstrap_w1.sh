@@ -74,5 +74,4 @@ echo "**************************************************************************
 cd /etc/edb/efm-${EFMVERSION}
 /usr/edb/efm-${EFMVERSION}/bin/efm cluster-status efm
 
-#logs
-cat /var/log/efm-${EFMVERSION}/startup-efm.log
+printf "***************** FINISHED W1 **************"
